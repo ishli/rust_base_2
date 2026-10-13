@@ -21,12 +21,12 @@ pub struct MyBufReader {
 impl MyBufReader {
     pub fn open(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = File::open(path)?;
-        return Ok(Self {
+        Ok(Self {
             buffer: vec![0_u8; BUFFER_SIZE],
             current_size: 0,
             offset: 0,
-            file: file,
-        });
+            file,
+        })
     }
 
     pub fn read_byte(&mut self) -> io::Result<Option<u8>> {
@@ -42,7 +42,7 @@ impl MyBufReader {
         let result: u8 = self.buffer[self.offset];
         self.offset += 1;
         
-        return Ok(Some(result));
+        Ok(Some(result))
     }
 }
 
@@ -59,10 +59,10 @@ impl MyBufWriter {
     pub fn create(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = File::create(path)?;
 
-        return Ok(Self {
+        Ok(Self {
             buffer: Vec::with_capacity(BUFFER_SIZE),
-            file: file,
-        });
+            file,
+        })
     }
 
     pub fn write_buffered(&mut self, data: &[u8]) -> io::Result<()> {
@@ -72,7 +72,7 @@ impl MyBufWriter {
             let mut current = BUFFER_SIZE - self.buffer.len();
 
             if current == 0 {
-                self.flush();
+                self.flush()?;
                 current = BUFFER_SIZE;
             }
 
@@ -84,18 +84,18 @@ impl MyBufWriter {
             slice_begin += offset;
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn flush(&mut self) -> io::Result<()> {
         self.file.write_all(&self.buffer)?;
         self.buffer.clear();
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn close(mut self) -> io::Result<()> {
-        return self.flush();
+        self.flush()
     }
 }
 
